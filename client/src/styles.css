@@ -1,0 +1,166 @@
+:root {
+  color: #1f2933;
+  background: #f7f4ed;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.timeline-page,
+.page-state {
+  width: min(920px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+.timeline-header,
+.empty-state,
+.page-state {
+  background: #fffdf8;
+  border: 1px solid #e0d6c3;
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(72, 52, 31, 0.08);
+}
+
+.timeline-header {
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: #7c4f2c;
+  font-family: "Trebuchet MS", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 0.95;
+  margin-bottom: 16px;
+}
+
+.timeline-header p:last-child,
+.empty-state p,
+.timeline-item p {
+  margin-bottom: 0;
+  color: #5e6875;
+}
+
+.timeline-list {
+  display: grid;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeline-item {
+  align-items: center;
+  background: #fffdf8;
+  border: 1px solid #e0d6c3;
+  border-radius: 18px;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(150px, 0.75fr) 1fr auto;
+  padding: 20px;
+}
+
+.timeline-item time {
+  color: #7c4f2c;
+  font-family: "Trebuchet MS", sans-serif;
+  font-weight: 700;
+}
+
+.timeline-item h2 {
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+}
+
+.status {
+  border-radius: 999px;
+  font-family: "Trebuchet MS", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  text-transform: uppercase;
+}
+
+.status--planned {
+  background: #e9eef5;
+  color: #32465f;
+}
+
+.status--booked {
+  background: #e6f5ec;
+  color: #286140;
+}
+
+.status--completed {
+  background: #edf7d8;
+  color: #4d641f;
+}
+
+.status--cancelled {
+  background: #f7e4df;
+  color: #883827;
+}
+
+.empty-state,
+.page-state {
+  padding: 32px;
+  text-align: center;
+}
+
+.page-state--error {
+  border-color: #e4b5aa;
+  color: #883827;
+}
+
+@media (max-width: 720px) {
+  .timeline-page,
+  .page-state {
+    padding: 24px 0;
+    width: min(100% - 24px, 920px);
+  }
+
+  .timeline-header,
+  .empty-state,
+  .page-state {
+    border-radius: 18px;
+    padding: 24px;
+  }
+
+  .timeline-item {
+    align-items: start;
+    grid-template-columns: 1fr;
+  }
+
+  .status {
+    justify-self: start;
+  }
+}
