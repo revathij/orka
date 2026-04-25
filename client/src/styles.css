@@ -289,6 +289,104 @@ h3 {
   letter-spacing: 0.04em;
 }
 
+.home-page {
+  position: relative;
+}
+
+.home-page::before {
+  content: "";
+  position: fixed;
+  inset: -20% -10% auto;
+  height: 360px;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 172, 88, 0.3), transparent 55%),
+    radial-gradient(circle at 80% 30%, rgba(57, 182, 167, 0.3), transparent 58%),
+    radial-gradient(circle at 50% 65%, rgba(66, 125, 255, 0.22), transparent 62%);
+  filter: blur(6px);
+  animation: heroFloat 10s ease-in-out infinite alternate;
+}
+
+.home-hero {
+  background: linear-gradient(130deg, rgba(255, 250, 240, 0.95), rgba(235, 249, 255, 0.93));
+  border: 1px solid rgba(147, 182, 198, 0.45);
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1.2fr 0.8fr;
+  overflow: hidden;
+  position: relative;
+}
+
+.home-hero::after {
+  content: "";
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 183, 123, 0.4), rgba(255, 183, 123, 0));
+}
+
+.home-hero__copy p {
+  max-width: 58ch;
+}
+
+.home-hero__stats {
+  display: grid;
+  gap: 12px;
+  align-content: center;
+}
+
+.home-hero__stats article {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(130, 180, 196, 0.4);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.home-hero__stats h3 {
+  margin: 0;
+  font-size: 1.9rem;
+  color: #11587b;
+}
+
+.home-hero__stats p {
+  margin: 0;
+  color: #4f6675;
+  font-family: "Trebuchet MS", sans-serif;
+}
+
+.home-trust-strip {
+  background: linear-gradient(90deg, rgba(20, 96, 122, 0.9), rgba(23, 135, 128, 0.87));
+  border: 1px solid rgba(53, 133, 166, 0.35);
+  border-radius: 18px;
+  color: #f4fdff;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0 0 22px;
+  padding: 14px 16px;
+}
+
+.home-trust-strip p {
+  margin: 0;
+  font-family: "Trebuchet MS", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+@keyframes heroFloat {
+  from {
+    transform: translateY(-8px);
+  }
+  to {
+    transform: translateY(10px);
+  }
+}
+
 @media (max-width: 720px) {
   .timeline-page,
   .page-state {
@@ -315,5 +413,10 @@ h3 {
 
   .status {
     justify-self: start;
+  }
+
+  .home-hero,
+  .home-trust-strip {
+    grid-template-columns: 1fr;
   }
 }

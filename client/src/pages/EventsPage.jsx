@@ -118,14 +118,40 @@ export default function EventsPage() {
   }
 
   return (
-    <main className="timeline-page">
-      <section className="timeline-header" aria-labelledby="events-title">
-        <p className="eyebrow">Orka</p>
-        <h1 id="events-title">Events</h1>
-        <p>Create an event, then add vendor services to build its timeline.</p>
-        <div className="header-links">
-          <Link to="/vendors">Manage vendors</Link>
+    <main className="timeline-page home-page">
+      <section className="timeline-header home-hero" aria-labelledby="events-title">
+        <div className="home-hero__copy">
+          <p className="eyebrow">Orka Event OS</p>
+          <h1 id="events-title">Create Stunning Events With Faster Vendor Planning</h1>
+          <p>
+            Run your event operations from one elegant workspace. Set up events, manage service types, and
+            orchestrate vendors with clear timelines.
+          </p>
+          <div className="header-links">
+            <Link to="/vendors">Manage vendors</Link>
+          </div>
         </div>
+        <div className="home-hero__stats" aria-label="Orka highlights">
+          <article>
+            <h3>{events.length}</h3>
+            <p>Events</p>
+          </article>
+          <article>
+            <h3>{serviceTypes.length}</h3>
+            <p>Service Types</p>
+          </article>
+          <article>
+            <h3>4</h3>
+            <p>Timeline Statuses</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="home-trust-strip" aria-label="Why teams choose Orka">
+        <p>Fast setup</p>
+        <p>Clean orchestration timeline</p>
+        <p>Vendor-first workflow</p>
+        <p>Built for event teams</p>
       </section>
 
       <section className="panel" aria-labelledby="create-event-title">
