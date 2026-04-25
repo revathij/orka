@@ -6,13 +6,18 @@ ON CONFLICT (id) DO UPDATE SET
   location = EXCLUDED.location,
   description = EXCLUDED.description;
 
-INSERT INTO vendors (id, name) VALUES
-  ('22222222-2222-4222-8222-222222222221', 'Morning Bloom Florals'),
-  ('22222222-2222-4222-8222-222222222222', 'Golden Table Catering'),
-  ('22222222-2222-4222-8222-222222222223', 'Blue Hour Photography'),
-  ('22222222-2222-4222-8222-222222222224', 'Harbor Lights Music')
+INSERT INTO vendors (id, name, service_type, contact_name, phone, email, notes) VALUES
+  ('22222222-2222-4222-8222-222222222221', 'Morning Bloom Florals', 'Decor', 'Aisha Rahman', '+65 9000 1001', 'aisha@bloom.example', 'Prefers early setup slots'),
+  ('22222222-2222-4222-8222-222222222222', 'Golden Table Catering', 'Catering', 'Nikhil Sharma', '+65 9000 1002', 'nikhil@table.example', 'Vegetarian menu available'),
+  ('22222222-2222-4222-8222-222222222223', 'Blue Hour Photography', 'Photography', 'Priya Menon', '+65 9000 1003', 'priya@bluehour.example', 'Two photographer package'),
+  ('22222222-2222-4222-8222-222222222224', 'Harbor Lights Music', 'Music', 'Arun Dey', '+65 9000 1004', 'arun@harborlights.example', 'Supports acoustic and DJ sets')
 ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name;
+  name = EXCLUDED.name,
+  service_type = EXCLUDED.service_type,
+  contact_name = EXCLUDED.contact_name,
+  phone = EXCLUDED.phone,
+  email = EXCLUDED.email,
+  notes = EXCLUDED.notes;
 
 INSERT INTO bookings (id, event_id, vendor_id, service_type, scheduled_time, status) VALUES
   ('33333333-3333-4333-8333-333333333331', '11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222221', 'Floral setup', '2026-06-01T07:30:00Z', 'booked'),

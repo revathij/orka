@@ -65,6 +65,9 @@ export default function EventsPage() {
         <p className="eyebrow">Orka</p>
         <h1 id="events-title">Events</h1>
         <p>Create an event, then add vendor services to build its timeline.</p>
+        <div className="header-links">
+          <Link to="/vendors">Manage vendors</Link>
+        </div>
       </section>
 
       <section className="panel" aria-labelledby="create-event-title">

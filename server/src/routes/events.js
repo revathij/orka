@@ -26,6 +26,7 @@ function mapEvent(row) {
 function mapBooking(row) {
   return {
     id: row.id,
+    vendorId: row.vendor_id,
     vendorName: row.vendor_name,
     serviceType: row.service_type,
     scheduledTime: row.scheduled_time,
@@ -117,6 +118,7 @@ router.get("/:eventId/timeline", async (req, res, next) => {
     const timelineResult = await query(
       `SELECT
          b.id,
+         b.vendor_id,
          v.name AS vendor_name,
          b.service_type,
          b.scheduled_time,
@@ -139,7 +141,7 @@ router.get("/:eventId/timeline", async (req, res, next) => {
 
 router.post("/:eventId/bookings", async (req, res, next) => {
   const { eventId } = req.params;
-  const vendorName = cleanString(req.body.vendorName);
+  const vendorId = cleanString(req.body.vendorId);
   const serviceType = cleanString(req.body.serviceType);
   const scheduledTime = cleanString(req.body.scheduledTime);
   const status = cleanString(req.body.status) || "planned";
@@ -148,8 +150,12 @@ router.post("/:eventId/bookings", async (req, res, next) => {
     return res.status(400).json({ error: "Invalid event ID" });
   }
 
-  if (!vendorName || !serviceType || !scheduledTime) {
-    return res.status(400).json({ error: "Vendor name, service type, and scheduled time are required" });
+  if (!vendorId || !serviceType || !scheduledTime) {
+    return res.status(400).json({ error: "Vendor, service type, and scheduled time are required" });
+  }
+
+  if (!isUuid(vendorId)) {
+    return res.status(400).json({ error: "Invalid vendor ID" });
   }
 
   if (!statuses.has(status)) {
@@ -164,20 +170,25 @@ router.post("/:eventId/bookings", async (req, res, next) => {
     }
 
     const vendorResult = await query(
-      "INSERT INTO vendors (name) VALUES ($1) RETURNING id, name",
-      [vendorName]
+      "SELECT id, name FROM vendors WHERE id = $1",
+      [vendorId]
     );
+
+    if (vendorResult.rowCount === 0) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
 
     const bookingResult = await query(
       `INSERT INTO bookings (event_id, vendor_id, service_type, scheduled_time, status)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, service_type, scheduled_time, status`,
-      [eventId, vendorResult.rows[0].id, serviceType, scheduledTime, status]
+      [eventId, vendorId, serviceType, scheduledTime, status]
     );
 
     return res.status(201).json({
       booking: mapBooking({
         ...bookingResult.rows[0],
+        vendor_id: vendorResult.rows[0].id,
         vendor_name: vendorResult.rows[0].name
       })
     });

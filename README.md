@@ -7,13 +7,19 @@ Minimal orchestration timeline for event vendor services.
 - `server` - Node.js + Express API backed by PostgreSQL
 - `client` - React frontend built with Vite
 
-## Timeline API
+## Core APIs
 
 ```http
+GET /api/events
+POST /api/events
+GET /api/events/:eventId
 GET /api/events/:eventId/timeline
+POST /api/events/:eventId/bookings
+GET /api/vendors
+POST /api/vendors
 ```
 
-Returns one event and its bookings ordered by `scheduled_time`.
+Timeline bookings are returned ordered by `scheduled_time`.
 
 Example demo event ID:
 
@@ -43,6 +49,7 @@ Apply the schema migrations:
 ```bash
 docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/001_init.sql
 docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/002_event_details.sql
+docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/003_vendor_catalog.sql
 ```
 
 Seed demo data:
@@ -82,11 +89,17 @@ cd client
 npm run dev
 ```
 
-Open the demo timeline:
+Open the app:
 
 ```txt
-http://127.0.0.1:5173/events/11111111-1111-4111-8111-111111111111/timeline
+http://127.0.0.1:5173/
 ```
+
+Pages:
+
+- Events: `http://127.0.0.1:5173/`
+- Vendors: `http://127.0.0.1:5173/vendors`
+- Timeline: `http://127.0.0.1:5173/events/<event-id>/timeline`
 
 The API health check is available at:
 

@@ -28,6 +28,18 @@ export function createEvent(event) {
   });
 }
 
+export function getVendors(serviceType) {
+  const query = serviceType ? `?serviceType=${encodeURIComponent(serviceType)}` : "";
+  return request(`/api/vendors${query}`);
+}
+
+export function createVendor(vendor) {
+  return request("/api/vendors", {
+    method: "POST",
+    body: JSON.stringify(vendor)
+  });
+}
+
 export function getEventTimeline(eventId) {
   return request(`/api/events/${eventId}/timeline`);
 }

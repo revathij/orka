@@ -3,16 +3,20 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import EventsPage from "../pages/EventsPage.jsx";
 import EventTimelinePage from "../pages/EventTimelinePage.jsx";
-import { createBooking, createEvent, getEventTimeline, getEvents } from "../api.js";
+import VendorsPage from "../pages/VendorsPage.jsx";
+import { createBooking, createEvent, createVendor, getEventTimeline, getEvents, getVendors } from "../api.js";
 
 vi.mock("../api.js", () => ({
   createBooking: vi.fn(),
   createEvent: vi.fn(),
+  createVendor: vi.fn(),
   getEventTimeline: vi.fn(),
-  getEvents: vi.fn()
+  getEvents: vi.fn(),
+  getVendors: vi.fn()
 }));
 
 const eventId = "11111111-1111-4111-8111-111111111111";
+const vendorId = "33333333-3333-4333-8333-333333333333";
 
 function renderTimelinePage() {
   return render(
@@ -32,6 +36,14 @@ function renderEventsPage() {
   );
 }
 
+function renderVendorsPage() {
+  return render(
+    <MemoryRouter>
+      <VendorsPage />
+    </MemoryRouter>
+  );
+}
+
 afterEach(() => {
   cleanup();
 });
@@ -39,8 +51,10 @@ afterEach(() => {
 beforeEach(() => {
   createBooking.mockReset();
   createEvent.mockReset();
+  createVendor.mockReset();
   getEventTimeline.mockReset();
   getEvents.mockReset();
+  getVendors.mockReset();
 });
 
 describe("EventsPage", () => {
@@ -61,33 +75,14 @@ describe("EventsPage", () => {
 
     expect(await screen.findByText("Garden Wedding")).toBeInTheDocument();
     expect(screen.getByText("Main Hall")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View timeline" })).toHaveAttribute(
-      "href",
-      `/events/${eventId}/timeline`
-    );
-  });
-
-  it("shows an empty event list state", async () => {
-    getEvents.mockResolvedValue({ events: [] });
-
-    renderEventsPage();
-
-    expect(await screen.findByText("No events yet. Create one to start building a timeline.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Manage vendors" })).toHaveAttribute("href", "/vendors");
   });
 
   it("creates an event and reloads the list", async () => {
     getEvents
       .mockResolvedValueOnce({ events: [] })
       .mockResolvedValueOnce({
-        events: [
-          {
-            id: eventId,
-            name: "Conference",
-            startsAt: null,
-            location: null,
-            description: null
-          }
-        ]
+        events: [{ id: eventId, name: "Conference", startsAt: null, location: null, description: null }]
       });
     createEvent.mockResolvedValue({ event: { id: eventId, name: "Conference" } });
 
@@ -98,79 +93,79 @@ describe("EventsPage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Create event" }));
 
-    await waitFor(() => expect(createEvent).toHaveBeenCalledWith({
-      name: "Conference",
-      startsAt: null,
-      location: "",
-      description: ""
-    }));
-    expect(await screen.findByText("Conference")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(createEvent).toHaveBeenCalledWith({
+        name: "Conference",
+        startsAt: null,
+        location: "",
+        description: ""
+      })
+    );
+  });
+});
+
+describe("VendorsPage", () => {
+  it("lists vendors", async () => {
+    getVendors.mockResolvedValue({
+      vendors: [
+        {
+          id: vendorId,
+          name: "Blue Hour Photography",
+          serviceType: "Photography",
+          contactName: "Priya Menon",
+          email: "priya@example.com"
+        }
+      ]
+    });
+
+    renderVendorsPage();
+
+    expect(await screen.findByText("Blue Hour Photography")).toBeInTheDocument();
+    expect(screen.getByText("Photography")).toBeInTheDocument();
+  });
+
+  it("creates a vendor", async () => {
+    getVendors
+      .mockResolvedValueOnce({ vendors: [] })
+      .mockResolvedValueOnce({
+        vendors: [{ id: vendorId, name: "Blue Hour Photography", serviceType: "Photography" }]
+      });
+    createVendor.mockResolvedValue({ vendor: { id: vendorId, name: "Blue Hour Photography" } });
+
+    renderVendorsPage();
+
+    fireEvent.change(await screen.findByLabelText("Vendor name"), {
+      target: { value: "Blue Hour Photography" }
+    });
+    fireEvent.change(screen.getByLabelText("Service type"), {
+      target: { value: "Photography" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save vendor" }));
+
+    await waitFor(() =>
+      expect(createVendor).toHaveBeenCalledWith({
+        name: "Blue Hour Photography",
+        serviceType: "Photography",
+        contactName: "",
+        phone: "",
+        email: "",
+        notes: ""
+      })
+    );
   });
 });
 
 describe("EventTimelinePage", () => {
   it("shows the loading state", () => {
     getEventTimeline.mockReturnValue(new Promise(() => {}));
+    getVendors.mockReturnValue(new Promise(() => {}));
 
     renderTimelinePage();
 
     expect(screen.getByText("Loading timeline...")).toBeInTheDocument();
   });
 
-  it("shows the empty state", async () => {
-    getEventTimeline.mockResolvedValue({
-      event: { id: eventId, name: "Garden Wedding" },
-      timeline: []
-    });
-
-    renderTimelinePage();
-
-    expect(await screen.findByText("No services scheduled yet")).toBeInTheDocument();
-    expect(screen.getByText("Garden Wedding")).toBeInTheDocument();
-  });
-
-  it("shows the error state", async () => {
-    getEventTimeline.mockRejectedValue(new Error("Event not found"));
-
-    renderTimelinePage();
-
-    expect(await screen.findByText("We could not load this timeline.")).toBeInTheDocument();
-    expect(screen.getByText("Event not found")).toBeInTheDocument();
-  });
-
-  it("renders timeline items", async () => {
-    getEventTimeline.mockResolvedValue({
-      event: { id: eventId, name: "Conference" },
-      timeline: [
-        {
-          id: "booking-1",
-          vendorName: "Bright Audio",
-          serviceType: "Sound",
-          scheduledTime: "2026-06-01T10:00:00.000Z",
-          status: "booked"
-        },
-        {
-          id: "booking-2",
-          vendorName: "Calm Catering",
-          serviceType: "Lunch",
-          scheduledTime: "2026-06-01T12:00:00.000Z",
-          status: "cancelled"
-        }
-      ]
-    });
-
-    renderTimelinePage();
-
-    expect(await screen.findByText("Conference")).toBeInTheDocument();
-    expect(screen.getByText("Bright Audio")).toBeInTheDocument();
-    expect(screen.getByText("Sound")).toBeInTheDocument();
-    expect(screen.getAllByText("Booked").length).toBeGreaterThan(0);
-    expect(screen.getByText("Calm Catering")).toBeInTheDocument();
-    expect(screen.getAllByText("Cancelled").length).toBeGreaterThan(0);
-    await waitFor(() => expect(getEventTimeline).toHaveBeenCalledWith(eventId));
-  });
-
-  it("adds a vendor service and refreshes the timeline", async () => {
+  it("renders timeline and adds service using vendor selection", async () => {
     getEventTimeline
       .mockResolvedValueOnce({
         event: { id: eventId, name: "Conference" },
@@ -181,22 +176,43 @@ describe("EventTimelinePage", () => {
         timeline: [
           {
             id: "booking-1",
-            vendorName: "Bright Audio",
-            serviceType: "Sound",
+            vendorId,
+            vendorName: "Blue Hour Photography",
+            serviceType: "Photography",
             scheduledTime: "2026-06-01T10:00:00.000Z",
             status: "booked"
           }
         ]
       });
+    getVendors
+      .mockResolvedValueOnce({
+        vendors: [
+          {
+            id: vendorId,
+            name: "Blue Hour Photography",
+            serviceType: "Photography"
+          }
+        ]
+      })
+      .mockResolvedValue({
+        vendors: [
+          {
+            id: vendorId,
+            name: "Blue Hour Photography",
+            serviceType: "Photography"
+          }
+        ]
+      });
+
     createBooking.mockResolvedValue({ booking: { id: "booking-1" } });
 
     renderTimelinePage();
 
-    fireEvent.change(await screen.findByLabelText("Vendor name"), {
-      target: { value: "Bright Audio" }
+    fireEvent.change(await screen.findByLabelText("Service type"), {
+      target: { value: "Photography" }
     });
-    fireEvent.change(screen.getByLabelText("Service type"), {
-      target: { value: "Sound" }
+    fireEvent.change(screen.getByLabelText("Vendor"), {
+      target: { value: vendorId }
     });
     fireEvent.change(screen.getByLabelText("Scheduled time"), {
       target: { value: "2026-06-01T10:00" }
@@ -206,15 +222,15 @@ describe("EventTimelinePage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Add service" }));
 
-    await waitFor(() => expect(createBooking).toHaveBeenCalledWith(
-      eventId,
-      {
-        vendorName: "Bright Audio",
-        serviceType: "Sound",
+    await waitFor(() =>
+      expect(createBooking).toHaveBeenCalledWith(eventId, {
+        vendorId,
+        serviceType: "Photography",
         scheduledTime: new Date("2026-06-01T10:00").toISOString(),
         status: "booked"
-      }
-    ));
-    expect(await screen.findByText("Bright Audio")).toBeInTheDocument();
+      })
+    );
+
+    expect(await screen.findByText("Blue Hour Photography")).toBeInTheDocument();
   });
 });

@@ -1,0 +1,145 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { createVendor, getVendors } from "../api.js";
+
+const initialForm = {
+  name: "",
+  serviceType: "",
+  contactName: "",
+  phone: "",
+  email: "",
+  notes: ""
+};
+
+export default function VendorsPage() {
+  const [vendors, setVendors] = useState([]);
+  const [form, setForm] = useState(initialForm);
+  const [state, setState] = useState({ status: "loading", error: null });
+  const [submitState, setSubmitState] = useState({ status: "idle", error: null });
+
+  async function loadVendors() {
+    setState({ status: "loading", error: null });
+
+    try {
+      const data = await getVendors();
+      setVendors(data.vendors);
+      setState({ status: "success", error: null });
+    } catch (error) {
+      setState({ status: "error", error: error.message });
+    }
+  }
+
+  useEffect(() => {
+    loadVendors();
+  }, []);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setSubmitState({ status: "saving", error: null });
+
+    try {
+      await createVendor(form);
+      setForm(initialForm);
+      setSubmitState({ status: "idle", error: null });
+      await loadVendors();
+    } catch (error) {
+      setSubmitState({ status: "error", error: error.message });
+    }
+  }
+
+  return (
+    <main className="timeline-page">
+      <section className="timeline-header" aria-labelledby="vendors-title">
+        <p className="eyebrow">Orka</p>
+        <h1 id="vendors-title">Vendors</h1>
+        <p>Create vendors once, then choose them from the timeline booking flow.</p>
+        <div className="header-links">
+          <Link to="/">Back to events</Link>
+        </div>
+      </section>
+
+      <section className="panel" aria-labelledby="create-vendor-title">
+        <h2 id="create-vendor-title">Add vendor</h2>
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <label>
+            Vendor name
+            <input
+              required
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              placeholder="Blue Hour Photography"
+            />
+          </label>
+          <label>
+            Service type
+            <input
+              required
+              value={form.serviceType}
+              onChange={(event) => setForm({ ...form, serviceType: event.target.value })}
+              placeholder="Photography"
+            />
+          </label>
+          <label>
+            Contact name
+            <input
+              value={form.contactName}
+              onChange={(event) => setForm({ ...form, contactName: event.target.value })}
+              placeholder="Priya Menon"
+            />
+          </label>
+          <label>
+            Phone
+            <input
+              value={form.phone}
+              onChange={(event) => setForm({ ...form, phone: event.target.value })}
+              placeholder="+65 9000 0000"
+            />
+          </label>
+          <label>
+            Email
+            <input
+              type="email"
+              value={form.email}
+              onChange={(event) => setForm({ ...form, email: event.target.value })}
+              placeholder="vendor@example.com"
+            />
+          </label>
+          <label className="form-grid__wide">
+            Notes
+            <textarea
+              rows="3"
+              value={form.notes}
+              onChange={(event) => setForm({ ...form, notes: event.target.value })}
+              placeholder="Optional notes, package details, constraints"
+            />
+          </label>
+          {submitState.status === "error" ? <p className="form-error">{submitState.error}</p> : null}
+          <button type="submit" disabled={submitState.status === "saving"}>
+            {submitState.status === "saving" ? "Saving..." : "Save vendor"}
+          </button>
+        </form>
+      </section>
+
+      <section className="panel" aria-labelledby="vendor-list-title">
+        <h2 id="vendor-list-title">Vendor catalog</h2>
+        {state.status === "loading" ? <p>Loading vendors...</p> : null}
+        {state.status === "error" ? <p className="form-error">{state.error}</p> : null}
+        {state.status === "success" && vendors.length === 0 ? <p>No vendors yet.</p> : null}
+        {vendors.length > 0 ? (
+          <ul className="event-list">
+            {vendors.map((vendor) => (
+              <li key={vendor.id}>
+                <div>
+                  <h3>{vendor.name}</h3>
+                  <p>{vendor.serviceType}</p>
+                  {vendor.contactName ? <p>Contact: {vendor.contactName}</p> : null}
+                  {vendor.email ? <p>{vendor.email}</p> : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
+    </main>
+  );
+}

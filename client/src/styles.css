@@ -22,7 +22,9 @@ select {
 }
 
 button,
-.event-list a {
+.event-list a,
+.header-links a,
+.panel-header a {
   background: #1f2933;
   border: 0;
   border-radius: 999px;
@@ -121,7 +123,8 @@ h3 {
 .empty-state p,
 .timeline-item p,
 .event-list p,
-.header-detail {
+.header-detail,
+.form-hint {
   margin-bottom: 0;
   color: #5e6875;
 }
@@ -133,7 +136,8 @@ h3 {
 }
 
 .form-grid__wide,
-.form-error {
+.form-error,
+.form-hint {
   grid-column: 1 / -1;
 }
 
@@ -223,6 +227,17 @@ h3 {
   color: #883827;
 }
 
+.header-links,
+.panel-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.panel-header {
+  justify-content: space-between;
+}
+
 @media (max-width: 720px) {
   .timeline-page,
   .page-state {
@@ -240,7 +255,8 @@ h3 {
 
   .form-grid,
   .event-list li,
-  .timeline-item {
+  .timeline-item,
+  .panel-header {
     align-items: start;
     grid-template-columns: 1fr;
   }
