@@ -9,6 +9,9 @@ import {
   createEvent,
   createServiceType,
   createVendor,
+  deleteEvent,
+  deleteServiceType,
+  deleteVendor,
   getEventTimeline,
   getEvents,
   getServiceTypes,
@@ -20,6 +23,9 @@ vi.mock("../api.js", () => ({
   createEvent: vi.fn(),
   createServiceType: vi.fn(),
   createVendor: vi.fn(),
+  deleteEvent: vi.fn(),
+  deleteServiceType: vi.fn(),
+  deleteVendor: vi.fn(),
   getEventTimeline: vi.fn(),
   getEvents: vi.fn(),
   getServiceTypes: vi.fn(),
@@ -64,6 +70,9 @@ beforeEach(() => {
   createEvent.mockReset();
   createServiceType.mockReset();
   createVendor.mockReset();
+  deleteEvent.mockReset();
+  deleteServiceType.mockReset();
+  deleteVendor.mockReset();
   getEventTimeline.mockReset();
   getEvents.mockReset();
   getServiceTypes.mockReset();

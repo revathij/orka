@@ -89,6 +89,15 @@ describe("vendor routes", () => {
     expect(response.body.error).toBe("Vendor name and service type are required");
     expect(query).not.toHaveBeenCalled();
   });
+
+  it("deletes a vendor", async () => {
+    query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: vendorId }] });
+
+    const response = await request(app).delete(`/api/vendors/${vendorId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ deleted: true });
+  });
 });
 
 describe("event routes", () => {
@@ -183,6 +192,35 @@ describe("event routes", () => {
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Vendor, service type, and scheduled time are required");
     expect(query).not.toHaveBeenCalled();
+  });
+
+  it("deletes an event", async () => {
+    query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: eventId }] });
+
+    const response = await request(app).delete(`/api/events/${eventId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ deleted: true });
+  });
+
+  it("deletes a booking", async () => {
+    query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: "44444444-4444-4444-8444-444444444444" }] });
+
+    const response = await request(app).delete("/api/events/bookings/44444444-4444-4444-8444-444444444444");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ deleted: true });
+  });
+});
+
+describe("service type routes", () => {
+  it("deletes a service type", async () => {
+    query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: "55555555-5555-4555-8555-555555555555" }] });
+
+    const response = await request(app).delete("/api/service-types/55555555-5555-4555-8555-555555555555");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ deleted: true });
   });
 });
 

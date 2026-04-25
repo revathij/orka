@@ -139,6 +139,29 @@ router.get("/:eventId/timeline", async (req, res, next) => {
   }
 });
 
+router.delete("/:eventId", async (req, res, next) => {
+  const { eventId } = req.params;
+
+  if (!isUuid(eventId)) {
+    return res.status(400).json({ error: "Invalid event ID" });
+  }
+
+  try {
+    const result = await query(
+      "DELETE FROM events WHERE id = $1 RETURNING id",
+      [eventId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    return res.status(200).json({ deleted: true });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.post("/:eventId/bookings", async (req, res, next) => {
   const { eventId } = req.params;
   const vendorId = cleanString(req.body.vendorId);
@@ -192,6 +215,29 @@ router.post("/:eventId/bookings", async (req, res, next) => {
         vendor_name: vendorResult.rows[0].name
       })
     });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete("/bookings/:bookingId", async (req, res, next) => {
+  const { bookingId } = req.params;
+
+  if (!isUuid(bookingId)) {
+    return res.status(400).json({ error: "Invalid booking ID" });
+  }
+
+  try {
+    const result = await query(
+      "DELETE FROM bookings WHERE id = $1 RETURNING id",
+      [bookingId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    return res.status(200).json({ deleted: true });
   } catch (error) {
     return next(error);
   }

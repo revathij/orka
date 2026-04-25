@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { createServiceType, createVendor, getServiceTypes, getVendors } from "../api.js";
+import {
+  createServiceType,
+  createVendor,
+  deleteServiceType,
+  deleteVendor,
+  getServiceTypes,
+  getVendors
+} from "../api.js";
 
 const initialForm = {
   name: "",
@@ -89,6 +96,15 @@ export default function VendorsPage() {
     }
   }
 
+  async function handleDeleteServiceType(serviceTypeId) {
+    try {
+      await deleteServiceType(serviceTypeId);
+      await loadAll();
+    } catch (error) {
+      setServiceTypeState({ status: "error", error: error.message });
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitState({ status: "saving", error: null });
@@ -96,6 +112,18 @@ export default function VendorsPage() {
     try {
       await createVendor(form);
       setForm(initialForm);
+      setSubmitState({ status: "idle", error: null });
+      await loadAll();
+    } catch (error) {
+      setSubmitState({ status: "error", error: error.message });
+    }
+  }
+
+  async function handleDeleteVendor(vendorId) {
+    setSubmitState({ status: "saving", error: null });
+
+    try {
+      await deleteVendor(vendorId);
       setSubmitState({ status: "idle", error: null });
       await loadAll();
     } catch (error) {
@@ -131,6 +159,20 @@ export default function VendorsPage() {
             {serviceTypeState.status === "saving" ? "Adding..." : "Add service type"}
           </button>
         </form>
+        {serviceTypes.length > 0 ? (
+          <ul className="event-list">
+            {serviceTypes.map((type) => (
+              <li key={type.id}>
+                <div>
+                  <h3>{type.name}</h3>
+                </div>
+                <button type="button" onClick={() => handleDeleteServiceType(type.id)}>
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
 
       <section className="panel" aria-labelledby="create-vendor-title">
@@ -227,6 +269,7 @@ export default function VendorsPage() {
                   <p className="vendor-chip">{vendor.serviceType}</p>
                   {vendor.contactName ? <p>Contact: {vendor.contactName}</p> : null}
                   {vendor.email ? <p>{vendor.email}</p> : null}
+                  <button type="button" onClick={() => handleDeleteVendor(vendor.id)}>Delete vendor</button>
                 </div>
               </li>
             ))}

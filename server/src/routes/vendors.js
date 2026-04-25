@@ -2,9 +2,14 @@ import { Router } from "express";
 import { query } from "../db.js";
 
 const router = Router();
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function cleanString(value) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function isUuid(value) {
+  return uuidPattern.test(value);
 }
 
 function mapVendor(row) {
@@ -67,6 +72,33 @@ router.post("/", async (req, res, next) => {
 
     return res.status(201).json({ vendor: mapVendor(result.rows[0]) });
   } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete("/:vendorId", async (req, res, next) => {
+  const vendorId = cleanString(req.params.vendorId);
+
+  if (!isUuid(vendorId)) {
+    return res.status(400).json({ error: "Invalid vendor ID" });
+  }
+
+  try {
+    const result = await query(
+      "DELETE FROM vendors WHERE id = $1 RETURNING id",
+      [vendorId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    return res.status(200).json({ deleted: true });
+  } catch (error) {
+    if (error.code === "23503") {
+      return res.status(409).json({ error: "Vendor has bookings and cannot be deleted" });
+    }
+
     return next(error);
   }
 });

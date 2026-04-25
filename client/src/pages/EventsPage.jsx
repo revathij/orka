@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { createEvent, getEvents } from "../api.js";
+import { createEvent, deleteEvent, getEvents } from "../api.js";
 
 const initialForm = {
   name: "",
@@ -52,6 +52,18 @@ export default function EventsPage() {
         startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : null
       });
       setForm(initialForm);
+      setSubmitState({ status: "idle", error: null });
+      await loadEvents();
+    } catch (error) {
+      setSubmitState({ status: "error", error: error.message });
+    }
+  }
+
+  async function handleDeleteEvent(eventId) {
+    setSubmitState({ status: "saving", error: null });
+
+    try {
+      await deleteEvent(eventId);
       setSubmitState({ status: "idle", error: null });
       await loadEvents();
     } catch (error) {
@@ -130,7 +142,10 @@ export default function EventsPage() {
                   <p>{formatDate(event.startsAt)}</p>
                   {event.location ? <p>{event.location}</p> : null}
                 </div>
-                <Link to={`/events/${event.id}/timeline`}>View timeline</Link>
+                <div className="header-links">
+                  <Link to={`/events/${event.id}/timeline`}>View timeline</Link>
+                  <button type="button" onClick={() => handleDeleteEvent(event.id)}>Delete event</button>
+                </div>
               </li>
             ))}
           </ul>

@@ -2,11 +2,20 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import VendorsPage from "../pages/VendorsPage.jsx";
-import { createServiceType, createVendor, getServiceTypes, getVendors } from "../api.js";
+import {
+  createServiceType,
+  createVendor,
+  deleteServiceType,
+  deleteVendor,
+  getServiceTypes,
+  getVendors
+} from "../api.js";
 
 vi.mock("../api.js", () => ({
   createServiceType: vi.fn(),
   createVendor: vi.fn(),
+  deleteServiceType: vi.fn(),
+  deleteVendor: vi.fn(),
   getServiceTypes: vi.fn(),
   getVendors: vi.fn()
 }));
@@ -18,6 +27,8 @@ afterEach(() => {
 beforeEach(() => {
   createServiceType.mockReset();
   createVendor.mockReset();
+  deleteServiceType.mockReset();
+  deleteVendor.mockReset();
   getServiceTypes.mockReset();
   getVendors.mockReset();
 });
