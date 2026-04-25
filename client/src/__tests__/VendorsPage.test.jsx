@@ -2,10 +2,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import VendorsPage from "../pages/VendorsPage.jsx";
-import { createVendor, getVendors } from "../api.js";
+import { createServiceType, createVendor, getServiceTypes, getVendors } from "../api.js";
 
 vi.mock("../api.js", () => ({
+  createServiceType: vi.fn(),
   createVendor: vi.fn(),
+  getServiceTypes: vi.fn(),
   getVendors: vi.fn()
 }));
 
@@ -14,13 +16,19 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  createServiceType.mockReset();
   createVendor.mockReset();
+  getServiceTypes.mockReset();
   getVendors.mockReset();
 });
 
 describe("VendorsPage", () => {
-  it("sends photoUrl when creating a vendor", async () => {
+  it("creates service type and vendor", async () => {
+    getServiceTypes
+      .mockResolvedValueOnce({ serviceTypes: [{ id: "s1", name: "Photography" }] })
+      .mockResolvedValueOnce({ serviceTypes: [{ id: "s1", name: "Photography" }, { id: "s2", name: "Lighting" }] });
     getVendors.mockResolvedValue({ vendors: [] });
+    createServiceType.mockResolvedValue({ serviceType: { id: "s2", name: "Lighting" } });
     createVendor.mockResolvedValue({ vendor: { id: "v1" } });
 
     render(
@@ -29,19 +37,25 @@ describe("VendorsPage", () => {
       </MemoryRouter>
     );
 
+    fireEvent.change(await screen.findByLabelText("Service type name"), {
+      target: { value: "Lighting" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add service type" }));
+
+    await waitFor(() => expect(createServiceType).toHaveBeenCalledWith({ name: "Lighting" }));
+
     fireEvent.change(await screen.findByLabelText("Vendor name"), {
       target: { value: "Blue Hour Photography" }
     });
     fireEvent.change(screen.getByLabelText("Service type"), {
-      target: { value: "Photography" }
+      target: { value: "Lighting" }
     });
-
     fireEvent.click(screen.getByRole("button", { name: "Save vendor" }));
 
     await waitFor(() =>
       expect(createVendor).toHaveBeenCalledWith(expect.objectContaining({
         name: "Blue Hour Photography",
-        serviceType: "Photography",
+        serviceType: "Lighting",
         photoUrl: ""
       }))
     );

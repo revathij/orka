@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { createBooking, getEventTimeline, getVendors } from "../api.js";
+import { createBooking, getEventTimeline, getServiceTypes, getVendors } from "../api.js";
 import EventTimeline from "../components/EventTimeline.jsx";
 
 const initialBooking = {
@@ -14,6 +14,7 @@ export default function EventTimelinePage() {
   const { eventId } = useParams();
   const [state, setState] = useState({ status: "loading", data: null, error: null });
   const [vendorsState, setVendorsState] = useState({ status: "loading", data: [], error: null });
+  const [serviceTypes, setServiceTypes] = useState([]);
   const [booking, setBooking] = useState(initialBooking);
   const [submitState, setSubmitState] = useState({ status: "idle", error: null });
 
@@ -38,11 +39,12 @@ export default function EventTimelinePage() {
 
     setState({ status: "loading", data: null, error: null });
 
-    Promise.all([getEventTimeline(eventId), getVendors()])
-      .then(([timelineData, vendorData]) => {
+    Promise.all([getEventTimeline(eventId), getVendors(), getServiceTypes()])
+      .then(([timelineData, vendorData, serviceTypeData]) => {
         if (isCurrent) {
           setState({ status: "success", data: timelineData, error: null });
           setVendorsState({ status: "success", data: vendorData.vendors, error: null });
+          setServiceTypes(serviceTypeData.serviceTypes);
         }
       })
       .catch((error) => {
@@ -113,15 +115,19 @@ export default function EventTimelinePage() {
         <form className="form-grid" onSubmit={handleBookingSubmit}>
           <label>
             Service type
-            <input
+            <select
               required
               value={booking.serviceType}
               onChange={(event) => {
                 const serviceType = event.target.value;
                 setBooking({ ...booking, serviceType, vendorId: "" });
               }}
-              placeholder="Photography, Catering, Decor"
-            />
+            >
+              <option value="">Select service type</option>
+              {serviceTypes.map((type) => (
+                <option key={type.id} value={type.name}>{type.name}</option>
+              ))}
+            </select>
           </label>
           <label>
             Vendor
@@ -170,4 +176,3 @@ export default function EventTimelinePage() {
     </EventTimeline>
   );
 }
-

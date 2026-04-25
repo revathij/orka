@@ -28,6 +28,17 @@ export function createEvent(event) {
   });
 }
 
+export function getServiceTypes() {
+  return request("/api/service-types");
+}
+
+export function createServiceType(serviceType) {
+  return request("/api/service-types", {
+    method: "POST",
+    body: JSON.stringify(serviceType)
+  });
+}
+
 export function getVendors(serviceType) {
   const query = serviceType ? `?serviceType=${encodeURIComponent(serviceType)}` : "";
   return request(`/api/vendors${query}`);

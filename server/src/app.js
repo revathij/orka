@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import eventsRouter from "./routes/events.js";
 import vendorsRouter from "./routes/vendors.js";
+import serviceTypesRouter from "./routes/serviceTypes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 export function createApp() {
@@ -16,6 +17,7 @@ export function createApp() {
 
   app.use("/api/events", eventsRouter);
   app.use("/api/vendors", vendorsRouter);
+  app.use("/api/service-types", serviceTypesRouter);
   app.use(errorHandler);
 
   return app;

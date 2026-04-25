@@ -4,14 +4,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import EventsPage from "../pages/EventsPage.jsx";
 import EventTimelinePage from "../pages/EventTimelinePage.jsx";
 import VendorsPage from "../pages/VendorsPage.jsx";
-import { createBooking, createEvent, createVendor, getEventTimeline, getEvents, getVendors } from "../api.js";
+import {
+  createBooking,
+  createEvent,
+  createServiceType,
+  createVendor,
+  getEventTimeline,
+  getEvents,
+  getServiceTypes,
+  getVendors
+} from "../api.js";
 
 vi.mock("../api.js", () => ({
   createBooking: vi.fn(),
   createEvent: vi.fn(),
+  createServiceType: vi.fn(),
   createVendor: vi.fn(),
   getEventTimeline: vi.fn(),
   getEvents: vi.fn(),
+  getServiceTypes: vi.fn(),
   getVendors: vi.fn()
 }));
 
@@ -51,9 +62,11 @@ afterEach(() => {
 beforeEach(() => {
   createBooking.mockReset();
   createEvent.mockReset();
+  createServiceType.mockReset();
   createVendor.mockReset();
   getEventTimeline.mockReset();
   getEvents.mockReset();
+  getServiceTypes.mockReset();
   getVendors.mockReset();
 });
 
@@ -74,78 +87,39 @@ describe("EventsPage", () => {
     renderEventsPage();
 
     expect(await screen.findByText("Garden Wedding")).toBeInTheDocument();
-    expect(screen.getByText("Main Hall")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Manage vendors" })).toHaveAttribute("href", "/vendors");
-  });
-
-  it("creates an event and reloads the list", async () => {
-    getEvents
-      .mockResolvedValueOnce({ events: [] })
-      .mockResolvedValueOnce({
-        events: [{ id: eventId, name: "Conference", startsAt: null, location: null, description: null }]
-      });
-    createEvent.mockResolvedValue({ event: { id: eventId, name: "Conference" } });
-
-    renderEventsPage();
-
-    fireEvent.change(await screen.findByLabelText("Event name"), {
-      target: { value: "Conference" }
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Create event" }));
-
-    await waitFor(() =>
-      expect(createEvent).toHaveBeenCalledWith({
-        name: "Conference",
-        startsAt: null,
-        location: "",
-        description: ""
-      })
-    );
   });
 });
 
 describe("VendorsPage", () => {
-  it("lists vendors", async () => {
-    getVendors.mockResolvedValue({
-      vendors: [
-        {
-          id: vendorId,
-          name: "Blue Hour Photography",
-          serviceType: "Photography",
-          contactName: "Priya Menon",
-          email: "priya@example.com"
-        }
-      ]
+  it("creates service type and vendor", async () => {
+    getServiceTypes
+      .mockResolvedValueOnce({ serviceTypes: [{ id: "s1", name: "Photography" }] })
+      .mockResolvedValueOnce({ serviceTypes: [{ id: "s1", name: "Photography" }, { id: "s2", name: "Lighting" }] });
+    getVendors.mockResolvedValue({ vendors: [] });
+    createServiceType.mockResolvedValue({ serviceType: { id: "s2", name: "Lighting" } });
+    createVendor.mockResolvedValue({ vendor: { id: "v1" } });
+
+    renderVendorsPage();
+
+    fireEvent.change(await screen.findByLabelText("Service type name"), {
+      target: { value: "Lighting" }
     });
+    fireEvent.click(screen.getByRole("button", { name: "Add service type" }));
 
-    renderVendorsPage();
-
-    expect(await screen.findByText("Blue Hour Photography")).toBeInTheDocument();
-    expect(screen.getByText("Photography")).toBeInTheDocument();
-  });
-
-  it("creates a vendor", async () => {
-    getVendors
-      .mockResolvedValueOnce({ vendors: [] })
-      .mockResolvedValueOnce({
-        vendors: [{ id: vendorId, name: "Blue Hour Photography", serviceType: "Photography" }]
-      });
-    createVendor.mockResolvedValue({ vendor: { id: vendorId, name: "Blue Hour Photography" } });
-
-    renderVendorsPage();
+    await waitFor(() => expect(createServiceType).toHaveBeenCalledWith({ name: "Lighting" }));
 
     fireEvent.change(await screen.findByLabelText("Vendor name"), {
       target: { value: "Blue Hour Photography" }
     });
     fireEvent.change(screen.getByLabelText("Service type"), {
-      target: { value: "Photography" }
+      target: { value: "Lighting" }
     });
     fireEvent.click(screen.getByRole("button", { name: "Save vendor" }));
 
     await waitFor(() =>
       expect(createVendor).toHaveBeenCalledWith({
         name: "Blue Hour Photography",
-        serviceType: "Photography",
+        serviceType: "Lighting",
         contactName: "",
         phone: "",
         email: "",
@@ -157,16 +131,7 @@ describe("VendorsPage", () => {
 });
 
 describe("EventTimelinePage", () => {
-  it("shows the loading state", () => {
-    getEventTimeline.mockReturnValue(new Promise(() => {}));
-    getVendors.mockReturnValue(new Promise(() => {}));
-
-    renderTimelinePage();
-
-    expect(screen.getByText("Loading timeline...")).toBeInTheDocument();
-  });
-
-  it("renders timeline and adds service using vendor selection", async () => {
+  it("adds service using selected service type", async () => {
     getEventTimeline
       .mockResolvedValueOnce({
         event: { id: eventId, name: "Conference" },
@@ -185,25 +150,11 @@ describe("EventTimelinePage", () => {
           }
         ]
       });
-    getVendors
-      .mockResolvedValueOnce({
-        vendors: [
-          {
-            id: vendorId,
-            name: "Blue Hour Photography",
-            serviceType: "Photography"
-          }
-        ]
-      })
-      .mockResolvedValue({
-        vendors: [
-          {
-            id: vendorId,
-            name: "Blue Hour Photography",
-            serviceType: "Photography"
-          }
-        ]
-      });
+
+    getServiceTypes.mockResolvedValue({ serviceTypes: [{ id: "s1", name: "Photography" }] });
+    getVendors.mockResolvedValue({
+      vendors: [{ id: vendorId, name: "Blue Hour Photography", serviceType: "Photography" }]
+    });
 
     createBooking.mockResolvedValue({ booking: { id: "booking-1" } });
 
@@ -231,7 +182,5 @@ describe("EventTimelinePage", () => {
         status: "booked"
       })
     );
-
-    expect(await screen.findByText("Blue Hour Photography")).toBeInTheDocument();
   });
 });

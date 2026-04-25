@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { createVendor, getVendors } from "../api.js";
+import { createServiceType, createVendor, getServiceTypes, getVendors } from "../api.js";
 
 const initialForm = {
   name: "",
@@ -32,18 +32,22 @@ async function toDataUrl(file) {
 
 export default function VendorsPage() {
   const [vendors, setVendors] = useState([]);
+  const [serviceTypes, setServiceTypes] = useState([]);
+  const [serviceTypeName, setServiceTypeName] = useState("");
   const [form, setForm] = useState(initialForm);
   const [state, setState] = useState({ status: "loading", error: null });
   const [submitState, setSubmitState] = useState({ status: "idle", error: null });
+  const [serviceTypeState, setServiceTypeState] = useState({ status: "idle", error: null });
 
   const previewImage = useMemo(() => form.photoUrl || null, [form.photoUrl]);
 
-  async function loadVendors() {
+  async function loadAll() {
     setState({ status: "loading", error: null });
 
     try {
-      const data = await getVendors();
-      setVendors(data.vendors);
+      const [vendorsData, typesData] = await Promise.all([getVendors(), getServiceTypes()]);
+      setVendors(vendorsData.vendors);
+      setServiceTypes(typesData.serviceTypes);
       setState({ status: "success", error: null });
     } catch (error) {
       setState({ status: "error", error: error.message });
@@ -51,7 +55,7 @@ export default function VendorsPage() {
   }
 
   useEffect(() => {
-    loadVendors();
+    loadAll();
   }, []);
 
   async function handlePhotoChange(event) {
@@ -70,6 +74,21 @@ export default function VendorsPage() {
     }
   }
 
+  async function handleServiceTypeSubmit(event) {
+    event.preventDefault();
+    setServiceTypeState({ status: "saving", error: null });
+
+    try {
+      await createServiceType({ name: serviceTypeName });
+      setServiceTypeName("");
+      setServiceTypeState({ status: "idle", error: null });
+      const typesData = await getServiceTypes();
+      setServiceTypes(typesData.serviceTypes);
+    } catch (error) {
+      setServiceTypeState({ status: "error", error: error.message });
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitState({ status: "saving", error: null });
@@ -78,7 +97,7 @@ export default function VendorsPage() {
       await createVendor(form);
       setForm(initialForm);
       setSubmitState({ status: "idle", error: null });
-      await loadVendors();
+      await loadAll();
     } catch (error) {
       setSubmitState({ status: "error", error: error.message });
     }
@@ -95,6 +114,25 @@ export default function VendorsPage() {
         </div>
       </section>
 
+      <section className="panel" aria-labelledby="service-type-title">
+        <h2 id="service-type-title">Service type stage</h2>
+        <form className="form-grid" onSubmit={handleServiceTypeSubmit}>
+          <label>
+            Service type name
+            <input
+              required
+              value={serviceTypeName}
+              onChange={(event) => setServiceTypeName(event.target.value)}
+              placeholder="Makeup, Lighting, Venue Setup"
+            />
+          </label>
+          {serviceTypeState.status === "error" ? <p className="form-error">{serviceTypeState.error}</p> : null}
+          <button type="submit" disabled={serviceTypeState.status === "saving"}>
+            {serviceTypeState.status === "saving" ? "Adding..." : "Add service type"}
+          </button>
+        </form>
+      </section>
+
       <section className="panel" aria-labelledby="create-vendor-title">
         <h2 id="create-vendor-title">Add vendor</h2>
         <form className="form-grid" onSubmit={handleSubmit}>
@@ -109,12 +147,16 @@ export default function VendorsPage() {
           </label>
           <label>
             Service type
-            <input
+            <select
               required
               value={form.serviceType}
               onChange={(event) => setForm({ ...form, serviceType: event.target.value })}
-              placeholder="Photography"
-            />
+            >
+              <option value="">Select service type</option>
+              {serviceTypes.map((type) => (
+                <option key={type.id} value={type.name}>{type.name}</option>
+              ))}
+            </select>
           </label>
           <label>
             Contact name
