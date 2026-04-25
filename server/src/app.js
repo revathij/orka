@@ -1,19 +1,23 @@
 import express from "express";
 import cors from "cors";
-import timelineRouter from "./routes/timeline.js";
+import eventsRouter from "./routes/events.js";
+import vendorsRouter from "./routes/vendors.js";
+import serviceTypesRouter from "./routes/serviceTypes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 export function createApp() {
   const app = express();
 
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: "6mb" }));
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok" });
   });
 
-  app.use("/api/events", timelineRouter);
+  app.use("/api/events", eventsRouter);
+  app.use("/api/vendors", vendorsRouter);
+  app.use("/api/service-types", serviceTypesRouter);
   app.use(errorHandler);
 
   return app;

@@ -1,22 +1,15 @@
 import { Route, Routes } from "react-router-dom";
+import EventsPage from "./pages/EventsPage.jsx";
 import EventTimelinePage from "./pages/EventTimelinePage.jsx";
-
-function HomePage() {
-  return (
-    <main className="page-state">
-      <p className="eyebrow">Orka</p>
-      <h1>Event timelines</h1>
-      <p>Open `/events/:eventId/timeline` to view an event orchestration timeline.</p>
-    </main>
-  );
-}
+import VendorsPage from "./pages/VendorsPage.jsx";
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<EventsPage />} />
+      <Route path="/vendors" element={<VendorsPage />} />
       <Route path="/events/:eventId/timeline" element={<EventTimelinePage />} />
-      <Route path="*" element={<HomePage />} />
+      <Route path="*" element={<EventsPage />} />
     </Routes>
   );
 }

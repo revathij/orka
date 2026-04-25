@@ -6,3 +6,6 @@ coverage/
 !.env.example
 .DS_Store
 npm-debug.log*
+*.log
+orka-timeline-demo.png
+.edge-demo-profile*/

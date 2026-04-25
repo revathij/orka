@@ -2,25 +2,26 @@
 
 Minimal orchestration timeline for event vendor services.
 
-## Structure
-
-- `server` - Node.js + Express API backed by PostgreSQL
-- `client` - React frontend built with Vite
-
-## Timeline API
+## Core APIs
 
 ```http
+GET /api/events
+POST /api/events
 GET /api/events/:eventId/timeline
+POST /api/events/:eventId/bookings
+GET /api/vendors
+POST /api/vendors
 ```
 
-Returns one event and its bookings ordered by `scheduled_time`.
+## Vendor Photos
 
-## Local setup
+Vendors can upload profile photos from the UI. The frontend converts the selected image to a data URL and stores it in PostgreSQL via `photo_url`.
+
+## Migrations
 
 ```bash
-npm run install:all
-npm test
-npm run lint
+docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/001_init.sql
+docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/002_event_details.sql
+docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/003_vendor_catalog.sql
+docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/004_vendor_photos.sql
 ```
-
-Set `DATABASE_URL` for the backend before running the API against PostgreSQL.
