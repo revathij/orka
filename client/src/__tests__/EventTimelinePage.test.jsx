@@ -80,7 +80,7 @@ beforeEach(() => {
 });
 
 describe("EventsPage", () => {
-  it("lists events", async () => {
+  it("lists events and manages service types", async () => {
     getEvents.mockResolvedValue({
       events: [
         {
@@ -92,23 +92,14 @@ describe("EventsPage", () => {
         }
       ]
     });
+    getServiceTypes
+      .mockResolvedValueOnce({ serviceTypes: [{ id: "s1", name: "Photography" }] })
+      .mockResolvedValueOnce({ serviceTypes: [{ id: "s1", name: "Photography" }, { id: "s2", name: "Lighting" }] });
+    createServiceType.mockResolvedValue({ serviceType: { id: "s2", name: "Lighting" } });
 
     renderEventsPage();
 
     expect(await screen.findByText("Garden Wedding")).toBeInTheDocument();
-  });
-});
-
-describe("VendorsPage", () => {
-  it("creates service type and vendor", async () => {
-    getServiceTypes
-      .mockResolvedValueOnce({ serviceTypes: [{ id: "s1", name: "Photography" }] })
-      .mockResolvedValueOnce({ serviceTypes: [{ id: "s1", name: "Photography" }, { id: "s2", name: "Lighting" }] });
-    getVendors.mockResolvedValue({ vendors: [] });
-    createServiceType.mockResolvedValue({ serviceType: { id: "s2", name: "Lighting" } });
-    createVendor.mockResolvedValue({ vendor: { id: "v1" } });
-
-    renderVendorsPage();
 
     fireEvent.change(await screen.findByLabelText("Service type name"), {
       target: { value: "Lighting" }
@@ -116,6 +107,15 @@ describe("VendorsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add service type" }));
 
     await waitFor(() => expect(createServiceType).toHaveBeenCalledWith({ name: "Lighting" }));
+  });
+});
+
+describe("VendorsPage", () => {
+  it("creates vendor", async () => {
+    getVendors.mockResolvedValue({ vendors: [] });
+    createVendor.mockResolvedValue({ vendor: { id: "v1" } });
+
+    renderVendorsPage();
 
     fireEvent.change(await screen.findByLabelText("Vendor name"), {
       target: { value: "Blue Hour Photography" }

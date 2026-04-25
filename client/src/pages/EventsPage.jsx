@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { createEvent, deleteEvent, getEvents } from "../api.js";
+import {
+  createEvent,
+  createServiceType,
+  deleteEvent,
+  deleteServiceType,
+  getEvents,
+  getServiceTypes
+} from "../api.js";
 
 const initialForm = {
   name: "",
@@ -22,9 +29,12 @@ function formatDate(value) {
 
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
+  const [serviceTypes, setServiceTypes] = useState([]);
+  const [serviceTypeName, setServiceTypeName] = useState("");
   const [form, setForm] = useState(initialForm);
   const [state, setState] = useState({ status: "loading", error: null });
   const [submitState, setSubmitState] = useState({ status: "idle", error: null });
+  const [serviceTypeState, setServiceTypeState] = useState({ status: "idle", error: null });
 
   async function loadEvents() {
     setState({ status: "loading", error: null });
@@ -38,8 +48,18 @@ export default function EventsPage() {
     }
   }
 
+  async function loadServiceTypes() {
+    try {
+      const data = await getServiceTypes();
+      setServiceTypes(data.serviceTypes);
+    } catch (error) {
+      setServiceTypeState({ status: "error", error: error.message });
+    }
+  }
+
   useEffect(() => {
     loadEvents();
+    loadServiceTypes();
   }, []);
 
   async function handleSubmit(event) {
@@ -68,6 +88,32 @@ export default function EventsPage() {
       await loadEvents();
     } catch (error) {
       setSubmitState({ status: "error", error: error.message });
+    }
+  }
+
+  async function handleServiceTypeSubmit(event) {
+    event.preventDefault();
+    setServiceTypeState({ status: "saving", error: null });
+
+    try {
+      await createServiceType({ name: serviceTypeName });
+      setServiceTypeName("");
+      setServiceTypeState({ status: "idle", error: null });
+      await loadServiceTypes();
+    } catch (error) {
+      setServiceTypeState({ status: "error", error: error.message });
+    }
+  }
+
+  async function handleDeleteServiceType(serviceTypeId) {
+    setServiceTypeState({ status: "saving", error: null });
+
+    try {
+      await deleteServiceType(serviceTypeId);
+      setServiceTypeState({ status: "idle", error: null });
+      await loadServiceTypes();
+    } catch (error) {
+      setServiceTypeState({ status: "error", error: error.message });
     }
   }
 
@@ -124,6 +170,39 @@ export default function EventsPage() {
             {submitState.status === "saving" ? "Creating..." : "Create event"}
           </button>
         </form>
+      </section>
+
+      <section className="panel" aria-labelledby="service-type-title">
+        <h2 id="service-type-title">Manage service types</h2>
+        <form className="form-grid" onSubmit={handleServiceTypeSubmit}>
+          <label>
+            Service type name
+            <input
+              required
+              value={serviceTypeName}
+              onChange={(event) => setServiceTypeName(event.target.value)}
+              placeholder="Makeup, Lighting, Venue Setup"
+            />
+          </label>
+          {serviceTypeState.status === "error" ? <p className="form-error">{serviceTypeState.error}</p> : null}
+          <button type="submit" disabled={serviceTypeState.status === "saving"}>
+            {serviceTypeState.status === "saving" ? "Adding..." : "Add service type"}
+          </button>
+        </form>
+        {serviceTypes.length > 0 ? (
+          <ul className="event-list">
+            {serviceTypes.map((type) => (
+              <li key={type.id}>
+                <div>
+                  <h3>{type.name}</h3>
+                </div>
+                <button type="button" onClick={() => handleDeleteServiceType(type.id)}>
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
 
       <section className="panel" aria-labelledby="event-list-title">
