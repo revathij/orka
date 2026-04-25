@@ -1,4 +1,4 @@
-﻿const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
 
 export async function getEventTimeline(eventId) {
   const response = await fetch(`${apiBaseUrl}/api/events/${eventId}/timeline`);

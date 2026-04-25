@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import cors from "cors";
 import timelineRouter from "./routes/timeline.js";
 import { errorHandler } from "./middleware/errorHandler.js";

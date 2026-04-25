@@ -1,4 +1,4 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { query } from "../db.js";
 
 const router = Router();

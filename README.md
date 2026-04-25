@@ -1,4 +1,4 @@
-﻿# Orka
+# Orka
 
 Minimal orchestration timeline for event vendor services.
 

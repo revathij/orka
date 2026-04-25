@@ -1,4 +1,4 @@
-﻿import request from "supertest";
+import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../src/db.js", () => ({

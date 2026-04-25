@@ -1,4 +1,4 @@
-﻿const statusLabels = {
+const statusLabels = {
   planned: "Planned",
   booked: "Booked",
   completed: "Completed",
