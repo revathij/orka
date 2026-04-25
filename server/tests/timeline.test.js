@@ -82,11 +82,11 @@ describe("vendor routes", () => {
     expect(query.mock.calls[0][1][1]).toBe("Photography");
   });
 
-  it("rejects vendor creation without name", async () => {
+  it("rejects vendor creation without name and service type", async () => {
     const response = await request(app).post("/api/vendors").send({ name: "" });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("Vendor name is required");
+    expect(response.body.error).toBe("Vendor name and service type are required");
     expect(query).not.toHaveBeenCalled();
   });
 

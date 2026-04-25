@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 import {
   createVendor,
   deleteVendor,
+  getServiceTypes,
   getVendors
 } from "../api.js";
 
 const initialForm = {
   name: "",
+  serviceType: "",
   contactName: "",
   phone: "",
   email: "",
@@ -35,6 +37,7 @@ async function toDataUrl(file) {
 
 export default function VendorsPage() {
   const [vendors, setVendors] = useState([]);
+  const [serviceTypes, setServiceTypes] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [state, setState] = useState({ status: "loading", error: null });
   const [submitState, setSubmitState] = useState({ status: "idle", error: null });
@@ -45,8 +48,9 @@ export default function VendorsPage() {
     setState({ status: "loading", error: null });
 
     try {
-      const vendorsData = await getVendors();
+      const [vendorsData, serviceTypeData] = await Promise.all([getVendors(), getServiceTypes()]);
       setVendors(vendorsData.vendors);
+      setServiceTypes(serviceTypeData.serviceTypes);
       setState({ status: "success", error: null });
     } catch (error) {
       setState({ status: "error", error: error.message });
@@ -123,6 +127,19 @@ export default function VendorsPage() {
             />
           </label>
           <label>
+            Service type
+            <select
+              required
+              value={form.serviceType}
+              onChange={(event) => setForm({ ...form, serviceType: event.target.value })}
+            >
+              <option value="">Select service type</option>
+              {serviceTypes.map((type) => (
+                <option key={type.id} value={type.name}>{type.name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
             Contact name
             <input
               value={form.contactName}
@@ -188,6 +205,7 @@ export default function VendorsPage() {
                 )}
                 <div>
                   <h3>{vendor.name}</h3>
+                  {vendor.serviceType ? <p className="vendor-chip">{vendor.serviceType}</p> : null}
                   {vendor.contactName ? <p>Contact: {vendor.contactName}</p> : null}
                   {vendor.email ? <p>{vendor.email}</p> : null}
                   <button type="button" onClick={() => handleDeleteVendor(vendor.id)}>Delete vendor</button>

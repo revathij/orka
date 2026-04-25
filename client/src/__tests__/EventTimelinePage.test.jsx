@@ -112,6 +112,7 @@ describe("EventsPage", () => {
 
 describe("VendorsPage", () => {
   it("creates vendor", async () => {
+    getServiceTypes.mockResolvedValue({ serviceTypes: [{ id: "s1", name: "Photography" }] });
     getVendors.mockResolvedValue({ vendors: [] });
     createVendor.mockResolvedValue({ vendor: { id: "v1" } });
 
@@ -120,11 +121,15 @@ describe("VendorsPage", () => {
     fireEvent.change(await screen.findByLabelText("Vendor name"), {
       target: { value: "Blue Hour Photography" }
     });
+    fireEvent.change(screen.getByLabelText("Service type"), {
+      target: { value: "Photography" }
+    });
     fireEvent.click(screen.getByRole("button", { name: "Save vendor" }));
 
     await waitFor(() =>
       expect(createVendor).toHaveBeenCalledWith({
         name: "Blue Hour Photography",
+        serviceType: "Photography",
         contactName: "",
         phone: "",
         email: "",
