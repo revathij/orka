@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { createVendor, getVendors } from "../api.js";
 
@@ -8,14 +8,35 @@ const initialForm = {
   contactName: "",
   phone: "",
   email: "",
-  notes: ""
+  notes: "",
+  photoUrl: ""
 };
+
+function initials(name) {
+  return name
+    .split(" ")
+    .map((token) => token[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+async function toDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Unable to read image"));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function VendorsPage() {
   const [vendors, setVendors] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [state, setState] = useState({ status: "loading", error: null });
   const [submitState, setSubmitState] = useState({ status: "idle", error: null });
+
+  const previewImage = useMemo(() => form.photoUrl || null, [form.photoUrl]);
 
   async function loadVendors() {
     setState({ status: "loading", error: null });
@@ -33,6 +54,22 @@ export default function VendorsPage() {
     loadVendors();
   }, []);
 
+  async function handlePhotoChange(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      setForm((current) => ({ ...current, photoUrl: "" }));
+      return;
+    }
+
+    try {
+      const photoUrl = await toDataUrl(file);
+      setForm((current) => ({ ...current, photoUrl }));
+    } catch (error) {
+      setSubmitState({ status: "error", error: error.message });
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitState({ status: "saving", error: null });
@@ -48,11 +85,11 @@ export default function VendorsPage() {
   }
 
   return (
-    <main className="timeline-page">
-      <section className="timeline-header" aria-labelledby="vendors-title">
+    <main className="timeline-page page-shell">
+      <section className="timeline-header hero-card" aria-labelledby="vendors-title">
         <p className="eyebrow">Orka</p>
-        <h1 id="vendors-title">Vendors</h1>
-        <p>Create vendors once, then choose them from the timeline booking flow.</p>
+        <h1 id="vendors-title">Vendor Studio</h1>
+        <p>Upload vendor profiles once, then assign them to event stages in seconds.</p>
         <div className="header-links">
           <Link to="/">Back to events</Link>
         </div>
@@ -104,6 +141,10 @@ export default function VendorsPage() {
               placeholder="vendor@example.com"
             />
           </label>
+          <label>
+            Vendor photo
+            <input type="file" accept="image/*" onChange={handlePhotoChange} />
+          </label>
           <label className="form-grid__wide">
             Notes
             <textarea
@@ -113,6 +154,11 @@ export default function VendorsPage() {
               placeholder="Optional notes, package details, constraints"
             />
           </label>
+          {previewImage ? (
+            <div className="photo-preview">
+              <img src={previewImage} alt="Vendor preview" />
+            </div>
+          ) : null}
           {submitState.status === "error" ? <p className="form-error">{submitState.error}</p> : null}
           <button type="submit" disabled={submitState.status === "saving"}>
             {submitState.status === "saving" ? "Saving..." : "Save vendor"}
@@ -126,12 +172,17 @@ export default function VendorsPage() {
         {state.status === "error" ? <p className="form-error">{state.error}</p> : null}
         {state.status === "success" && vendors.length === 0 ? <p>No vendors yet.</p> : null}
         {vendors.length > 0 ? (
-          <ul className="event-list">
+          <ul className="vendor-grid">
             {vendors.map((vendor) => (
-              <li key={vendor.id}>
+              <li key={vendor.id} className="vendor-card">
+                {vendor.photoUrl ? (
+                  <img src={vendor.photoUrl} alt={`${vendor.name} profile`} className="vendor-photo" />
+                ) : (
+                  <div className="vendor-photo vendor-photo--fallback">{initials(vendor.name)}</div>
+                )}
                 <div>
                   <h3>{vendor.name}</h3>
-                  <p>{vendor.serviceType}</p>
+                  <p className="vendor-chip">{vendor.serviceType}</p>
                   {vendor.contactName ? <p>Contact: {vendor.contactName}</p> : null}
                   {vendor.email ? <p>{vendor.email}</p> : null}
                 </div>

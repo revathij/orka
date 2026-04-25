@@ -15,7 +15,8 @@ function mapVendor(row) {
     contactName: row.contact_name,
     phone: row.phone,
     email: row.email,
-    notes: row.notes
+    notes: row.notes,
+    photoUrl: row.photo_url
   };
 }
 
@@ -25,14 +26,14 @@ router.get("/", async (req, res, next) => {
   try {
     const result = serviceType
       ? await query(
-          `SELECT id, name, service_type, contact_name, phone, email, notes
+          `SELECT id, name, service_type, contact_name, phone, email, notes, photo_url
            FROM vendors
            WHERE LOWER(service_type) = LOWER($1)
            ORDER BY name ASC`,
           [serviceType]
         )
       : await query(
-          `SELECT id, name, service_type, contact_name, phone, email, notes
+          `SELECT id, name, service_type, contact_name, phone, email, notes, photo_url
            FROM vendors
            ORDER BY service_type ASC NULLS LAST, name ASC`
         );
@@ -50,6 +51,7 @@ router.post("/", async (req, res, next) => {
   const phone = cleanString(req.body.phone) || null;
   const email = cleanString(req.body.email) || null;
   const notes = cleanString(req.body.notes) || null;
+  const photoUrl = cleanString(req.body.photoUrl) || null;
 
   if (!name || !serviceType) {
     return res.status(400).json({ error: "Vendor name and service type are required" });
@@ -57,10 +59,10 @@ router.post("/", async (req, res, next) => {
 
   try {
     const result = await query(
-      `INSERT INTO vendors (name, service_type, contact_name, phone, email, notes)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, name, service_type, contact_name, phone, email, notes`,
-      [name, serviceType, contactName, phone, email, notes]
+      `INSERT INTO vendors (name, service_type, contact_name, phone, email, notes, photo_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, name, service_type, contact_name, phone, email, notes, photo_url`,
+      [name, serviceType, contactName, phone, email, notes, photoUrl]
     );
 
     return res.status(201).json({ vendor: mapVendor(result.rows[0]) });

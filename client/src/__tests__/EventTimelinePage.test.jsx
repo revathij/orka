@@ -149,7 +149,8 @@ describe("VendorsPage", () => {
         contactName: "",
         phone: "",
         email: "",
-        notes: ""
+        notes: "",
+        photoUrl: ""
       })
     );
   });
