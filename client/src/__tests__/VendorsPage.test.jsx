@@ -58,15 +58,11 @@ describe("VendorsPage", () => {
     fireEvent.change(await screen.findByLabelText("Vendor name"), {
       target: { value: "Blue Hour Photography" }
     });
-    fireEvent.change(screen.getByLabelText("Service type"), {
-      target: { value: "Lighting" }
-    });
     fireEvent.click(screen.getByRole("button", { name: "Save vendor" }));
 
     await waitFor(() =>
       expect(createVendor).toHaveBeenCalledWith(expect.objectContaining({
         name: "Blue Hour Photography",
-        serviceType: "Lighting",
         photoUrl: ""
       }))
     );

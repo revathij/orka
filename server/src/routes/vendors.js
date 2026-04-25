@@ -51,15 +51,15 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   const name = cleanString(req.body.name);
-  const serviceType = cleanString(req.body.serviceType);
+  const serviceType = cleanString(req.body.serviceType) || null;
   const contactName = cleanString(req.body.contactName) || null;
   const phone = cleanString(req.body.phone) || null;
   const email = cleanString(req.body.email) || null;
   const notes = cleanString(req.body.notes) || null;
   const photoUrl = cleanString(req.body.photoUrl) || null;
 
-  if (!name || !serviceType) {
-    return res.status(400).json({ error: "Vendor name and service type are required" });
+  if (!name) {
+    return res.status(400).json({ error: "Vendor name is required" });
   }
 
   try {

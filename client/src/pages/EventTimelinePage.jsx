@@ -23,11 +23,11 @@ export default function EventTimelinePage() {
     setState({ status: "success", data, error: null });
   }
 
-  async function loadVendors(serviceType) {
+  async function loadVendors() {
     setVendorsState((current) => ({ ...current, status: "loading", error: null }));
 
     try {
-      const data = await getVendors(serviceType || undefined);
+      const data = await getVendors();
       setVendorsState({ status: "success", data: data.vendors, error: null });
     } catch (error) {
       setVendorsState({ status: "error", data: [], error: error.message });
@@ -58,14 +58,6 @@ export default function EventTimelinePage() {
       isCurrent = false;
     };
   }, [eventId]);
-
-  useEffect(() => {
-    if (!booking.serviceType) {
-      return;
-    }
-
-    loadVendors(booking.serviceType);
-  }, [booking.serviceType]);
 
   const selectedVendor = useMemo(
     () => vendorsState.data.find((vendor) => vendor.id === booking.vendorId) || null,
@@ -139,7 +131,7 @@ export default function EventTimelinePage() {
               <option value="">Select a vendor</option>
               {vendorsState.data.map((vendor) => (
                 <option key={vendor.id} value={vendor.id}>
-                  {vendor.name}{vendor.serviceType ? ` (${vendor.serviceType})` : ""}
+                  {vendor.name}
                 </option>
               ))}
             </select>
