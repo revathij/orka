@@ -1,8 +1,10 @@
-INSERT INTO events (id, name, starts_at) VALUES
-  ('11111111-1111-4111-8111-111111111111', 'Meera and Arjun Wedding', '2026-06-01T08:00:00Z')
+INSERT INTO events (id, name, starts_at, location, description) VALUES
+  ('11111111-1111-4111-8111-111111111111', 'Meera and Arjun Wedding', '2026-06-01T08:00:00Z', 'Orchid Garden Hall', 'Demo wedding timeline for local development')
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
-  starts_at = EXCLUDED.starts_at;
+  starts_at = EXCLUDED.starts_at,
+  location = EXCLUDED.location,
+  description = EXCLUDED.description;
 
 INSERT INTO vendors (id, name) VALUES
   ('22222222-2222-4222-8222-222222222221', 'Morning Bloom Florals'),

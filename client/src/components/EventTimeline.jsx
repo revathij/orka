@@ -12,14 +12,17 @@ function formatTime(value) {
   }).format(new Date(value));
 }
 
-export default function EventTimeline({ event, timeline }) {
+export default function EventTimeline({ event, timeline, children }) {
   return (
     <main className="timeline-page">
       <section className="timeline-header" aria-labelledby="timeline-title">
         <p className="eyebrow">Orka timeline</p>
         <h1 id="timeline-title">{event.name}</h1>
         <p>Vendor services in the order they are scheduled.</p>
+        {event.location ? <p className="header-detail">{event.location}</p> : null}
       </section>
+
+      {children}
 
       {timeline.length === 0 ? (
         <section className="empty-state">

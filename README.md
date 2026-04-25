@@ -38,10 +38,11 @@ npm run install:all
 docker run -d --name orka-postgres-demo -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=orka -p 55432:5432 postgres:16
 ```
 
-Apply the schema:
+Apply the schema migrations:
 
 ```bash
 docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/001_init.sql
+docker exec -i orka-postgres-demo psql -U postgres -d orka < server/migrations/002_event_details.sql
 ```
 
 Seed demo data:

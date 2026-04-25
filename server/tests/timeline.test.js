@@ -12,8 +12,18 @@ const app = createApp();
 const eventId = "11111111-1111-4111-8111-111111111111";
 const otherEventId = "22222222-2222-4222-8222-222222222222";
 
+function eventRow(id = eventId, name = "Launch Party") {
+  return {
+    id,
+    name,
+    starts_at: "2026-06-01T08:00:00.000Z",
+    location: "Main Hall",
+    description: "Demo event"
+  };
+}
+
 function mockEvent(id = eventId, name = "Launch Party") {
-  return { rowCount: 1, rows: [{ id, name }] };
+  return { rowCount: 1, rows: [eventRow(id, name)] };
 }
 
 function mockTimeline(rows) {
@@ -22,6 +32,115 @@ function mockTimeline(rows) {
 
 beforeEach(() => {
   query.mockReset();
+});
+
+describe("event routes", () => {
+  it("lists events", async () => {
+    query.mockResolvedValueOnce({ rowCount: 1, rows: [eventRow()] });
+
+    const response = await request(app).get("/api/events");
+
+    expect(response.status).toBe(200);
+    expect(response.body.events).toEqual([
+      {
+        id: eventId,
+        name: "Launch Party",
+        startsAt: "2026-06-01T08:00:00.000Z",
+        location: "Main Hall",
+        description: "Demo event"
+      }
+    ]);
+  });
+
+  it("creates an event", async () => {
+    query.mockResolvedValueOnce(mockEvent());
+
+    const response = await request(app)
+      .post("/api/events")
+      .send({
+        name: "Launch Party",
+        startsAt: "2026-06-01T08:00:00.000Z",
+        location: "Main Hall",
+        description: "Demo event"
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.event.name).toBe("Launch Party");
+    expect(query.mock.calls[0][1]).toEqual([
+      "Launch Party",
+      "2026-06-01T08:00:00.000Z",
+      "Main Hall",
+      "Demo event"
+    ]);
+  });
+
+  it("rejects event creation without a name", async () => {
+    const response = await request(app).post("/api/events").send({ name: "" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Event name is required");
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it("adds a booking to an event", async () => {
+    query
+      .mockResolvedValueOnce(mockEvent())
+      .mockResolvedValueOnce({ rowCount: 1, rows: [{ id: "vendor-1", name: "Bloom Florals" }] })
+      .mockResolvedValueOnce({
+        rowCount: 1,
+        rows: [
+          {
+            id: "booking-1",
+            service_type: "Floral setup",
+            scheduled_time: "2026-06-01T07:30:00.000Z",
+            status: "booked"
+          }
+        ]
+      });
+
+    const response = await request(app)
+      .post(`/api/events/${eventId}/bookings`)
+      .send({
+        vendorName: "Bloom Florals",
+        serviceType: "Floral setup",
+        scheduledTime: "2026-06-01T07:30:00.000Z",
+        status: "booked"
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.booking).toEqual({
+      id: "booking-1",
+      vendorName: "Bloom Florals",
+      serviceType: "Floral setup",
+      scheduledTime: "2026-06-01T07:30:00.000Z",
+      status: "booked"
+    });
+  });
+
+  it("rejects invalid booking status", async () => {
+    const response = await request(app)
+      .post(`/api/events/${eventId}/bookings`)
+      .send({
+        vendorName: "Bloom Florals",
+        serviceType: "Floral setup",
+        scheduledTime: "2026-06-01T07:30:00.000Z",
+        status: "maybe"
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid booking status");
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it("rejects missing booking details", async () => {
+    const response = await request(app)
+      .post(`/api/events/${eventId}/bookings`)
+      .send({ vendorName: "Bloom Florals" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Vendor name, service type, and scheduled time are required");
+    expect(query).not.toHaveBeenCalled();
+  });
 });
 
 describe("GET /api/events/:eventId/timeline", () => {
@@ -63,7 +182,7 @@ describe("GET /api/events/:eventId/timeline", () => {
     const response = await request(app).get(`/api/events/${otherEventId}/timeline`);
 
     expect(response.status).toBe(200);
-    expect(response.body.event).toEqual({ id: otherEventId, name: "Dinner" });
+    expect(response.body.event.id).toBe(otherEventId);
     expect(query.mock.calls[1][1]).toEqual([otherEventId]);
   });
 

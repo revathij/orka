@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import timelineRouter from "./routes/timeline.js";
+import eventsRouter from "./routes/events.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 export function createApp() {
@@ -13,7 +13,7 @@ export function createApp() {
     res.json({ status: "ok" });
   });
 
-  app.use("/api/events", timelineRouter);
+  app.use("/api/events", eventsRouter);
   app.use(errorHandler);
 
   return app;
