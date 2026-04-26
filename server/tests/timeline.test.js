@@ -137,13 +137,16 @@ describe("event routes", () => {
   it("adds a booking to an event", async () => {
     query
       .mockResolvedValueOnce(mockEvent())
-      .mockResolvedValueOnce({ rowCount: 1, rows: [{ id: vendorId, name: "Blue Hour Photography" }] })
+      .mockResolvedValueOnce({
+        rowCount: 1,
+        rows: [{ id: vendorId, name: "Blue Hour Photography", service_type: "Photography" }]
+      })
       .mockResolvedValueOnce({
         rowCount: 1,
         rows: [
           {
             id: "booking-1",
-            service_type: "Portrait session",
+            service_type: "Photography",
             scheduled_time: "2026-06-01T07:30:00.000Z",
             status: "booked"
           }
@@ -154,7 +157,7 @@ describe("event routes", () => {
       .post(`/api/events/${eventId}/bookings`)
       .send({
         vendorId,
-        serviceType: "Portrait session",
+        serviceType: "Photography",
         scheduledTime: "2026-06-01T07:30:00.000Z",
         status: "booked"
       });
@@ -164,10 +167,31 @@ describe("event routes", () => {
       id: "booking-1",
       vendorId,
       vendorName: "Blue Hour Photography",
-      serviceType: "Portrait session",
+      serviceType: "Photography",
       scheduledTime: "2026-06-01T07:30:00.000Z",
       status: "booked"
     });
+  });
+
+  it("rejects booking when vendor service type does not match", async () => {
+    query
+      .mockResolvedValueOnce(mockEvent())
+      .mockResolvedValueOnce({
+        rowCount: 1,
+        rows: [{ id: vendorId, name: "Blue Hour Photography", service_type: "Photography" }]
+      });
+
+    const response = await request(app)
+      .post(`/api/events/${eventId}/bookings`)
+      .send({
+        vendorId,
+        serviceType: "Catering",
+        scheduledTime: "2026-06-01T07:30:00.000Z",
+        status: "booked"
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Vendor does not support the selected service type");
   });
 
   it("rejects booking with invalid vendor ID", async () => {

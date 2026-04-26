@@ -23,11 +23,11 @@ export default function EventTimelinePage() {
     setState({ status: "success", data, error: null });
   }
 
-  async function loadVendors() {
+  async function loadVendors(serviceType) {
     setVendorsState((current) => ({ ...current, status: "loading", error: null }));
 
     try {
-      const data = await getVendors();
+      const data = await getVendors(serviceType);
       setVendorsState({ status: "success", data: data.vendors, error: null });
     } catch (error) {
       setVendorsState({ status: "error", data: [], error: error.message });
@@ -39,11 +39,11 @@ export default function EventTimelinePage() {
 
     setState({ status: "loading", data: null, error: null });
 
-    Promise.all([getEventTimeline(eventId), getVendors(), getServiceTypes()])
-      .then(([timelineData, vendorData, serviceTypeData]) => {
+    Promise.all([getEventTimeline(eventId), getServiceTypes()])
+      .then(([timelineData, serviceTypeData]) => {
         if (isCurrent) {
           setState({ status: "success", data: timelineData, error: null });
-          setVendorsState({ status: "success", data: vendorData.vendors, error: null });
+          setVendorsState({ status: "success", data: [], error: null });
           setServiceTypes(serviceTypeData.serviceTypes);
         }
       })
@@ -58,6 +58,15 @@ export default function EventTimelinePage() {
       isCurrent = false;
     };
   }, [eventId]);
+
+  useEffect(() => {
+    if (!booking.serviceType) {
+      setVendorsState((current) => ({ ...current, status: "success", data: [] }));
+      return;
+    }
+
+    loadVendors(booking.serviceType);
+  }, [booking.serviceType]);
 
   const selectedVendor = useMemo(
     () => vendorsState.data.find((vendor) => vendor.id === booking.vendorId) || null,
@@ -78,7 +87,7 @@ export default function EventTimelinePage() {
       setBooking(initialBooking);
       setSubmitState({ status: "idle", error: null });
       await loadTimeline();
-      await loadVendors();
+      setVendorsState({ status: "success", data: [], error: null });
     } catch (error) {
       setSubmitState({ status: "error", error: error.message });
     }
@@ -125,10 +134,13 @@ export default function EventTimelinePage() {
             Vendor
             <select
               required
+              disabled={!booking.serviceType}
               value={booking.vendorId}
               onChange={(event) => setBooking({ ...booking, vendorId: event.target.value })}
             >
-              <option value="">Select a vendor</option>
+              <option value="">
+                {booking.serviceType ? "Select a vendor" : "Select service type first"}
+              </option>
               {vendorsState.data.map((vendor) => (
                 <option key={vendor.id} value={vendor.id}>
                   {vendor.name}

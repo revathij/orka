@@ -173,6 +173,9 @@ describe("EventTimelinePage", () => {
     fireEvent.change(await screen.findByLabelText("Service type"), {
       target: { value: "Photography" }
     });
+
+    await waitFor(() => expect(getVendors).toHaveBeenCalledWith("Photography"));
+
     fireEvent.change(screen.getByLabelText("Vendor"), {
       target: { value: vendorId }
     });

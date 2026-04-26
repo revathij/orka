@@ -193,12 +193,17 @@ router.post("/:eventId/bookings", async (req, res, next) => {
     }
 
     const vendorResult = await query(
-      "SELECT id, name FROM vendors WHERE id = $1",
+      "SELECT id, name, service_type FROM vendors WHERE id = $1",
       [vendorId]
     );
 
     if (vendorResult.rowCount === 0) {
       return res.status(404).json({ error: "Vendor not found" });
+    }
+
+    const vendorServiceType = cleanString(vendorResult.rows[0].service_type);
+    if (!vendorServiceType || vendorServiceType.toLowerCase() !== serviceType.toLowerCase()) {
+      return res.status(400).json({ error: "Vendor does not support the selected service type" });
     }
 
     const bookingResult = await query(
