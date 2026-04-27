@@ -119,6 +119,12 @@ export default function EventsPage() {
 
   return (
     <main className="timeline-page home-page">
+      <nav className="home-nav" aria-label="Primary">
+        <a href="#events-section">Events</a>
+        <Link to="/vendors">Vendors</Link>
+        <a href="#service-types-section">Service Types</a>
+      </nav>
+
       <section className="timeline-header home-hero" aria-labelledby="events-title">
         <div className="home-hero__copy">
           <p className="eyebrow">Orka Event OS</p>
@@ -154,7 +160,25 @@ export default function EventsPage() {
         <p>Built for event teams</p>
       </section>
 
-      <section className="panel" aria-labelledby="create-event-title">
+      <section className="panel" aria-labelledby="why-orka-title">
+        <h2 id="why-orka-title">Why Orka Is Different</h2>
+        <div className="why-grid">
+          <article className="why-card">
+            <h3>Operational orchestration</h3>
+            <p>Plan real services in timeline order, not just event information pages.</p>
+          </article>
+          <article className="why-card">
+            <h3>Service-to-vendor accuracy</h3>
+            <p>Pick a service type first, then choose only matching vendors for fewer booking mistakes.</p>
+          </article>
+          <article className="why-card">
+            <h3>Live execution statuses</h3>
+            <p>Track progress from planned to completed with full visibility for your team.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="events-section" className="panel" aria-labelledby="create-event-title">
         <h2 id="create-event-title">Create event</h2>
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
@@ -198,7 +222,7 @@ export default function EventsPage() {
         </form>
       </section>
 
-      <section className="panel" aria-labelledby="service-type-title">
+      <section id="service-types-section" className="panel" aria-labelledby="service-type-title">
         <h2 id="service-type-title">Manage service types</h2>
         <form className="form-grid" onSubmit={handleServiceTypeSubmit}>
           <label>
